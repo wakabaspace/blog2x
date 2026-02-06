@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog2X - ブログ記事からXポストを自動生成</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1D9BF0;
+            --primary-light: #4AB3F4;
+            --primary-dark: #1A8CD8;
+            --secondary: #EFF9FF;
+            --text: #0F1419;
+            --text-light: #536471;
+            --bg: #F7FBFF;
+            --card: #FFFFFF;
+            --border: #D4E9F7;
+            --shadow: rgba(29, 155, 240, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        small {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+
+        .button {
+            padding: 0.75rem 2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .button:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .post-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .post-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .post-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            color: var(--text);
+            white-space: pre-wrap;
+        }
+
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        .char-count {
+            font-weight: 600;
+        }
+
+        .char-count.over {
+            color: #F4212E;
+        }
+
+        .copy-button {
+            padding: 0.5rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .copy-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .image-preview {
+            margin-top: 1rem;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .image-preview img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .image-item {
+            cursor: pointer;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .image-item:hover {
+            border-color: var(--primary);
+        }
+
+        .image-item.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.2);
+        }
+
+        .image-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .note {
+            background: var(--secondary);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Blog2X</h1>
+            <p class="subtitle">ブログ記事からXポストを自動生成</p>
+        </header>
+
+        <div class="card">
+            <h2>ブログ情報</h2>
+            <div class="form-group">
+                <label>ブログタイトル（任意）</label>
+                <input type="text" id="blogTitle" placeholder="記事のタイトル">
+            </div>
+            <div class="form-group">
+                <label>ブログURL（任意）</label>
+                <input type="text" id="blogUrl" placeholder="https://...（入力しなくてもOK）">
+                <small style="display: block; margin-top: 0.25rem;">※プロフにブログURLがある場合は不要です</small>
+            </div>
+            <div class="form-group">
+                <label>記事本文（または要点）</label>
+                <textarea id="blogContent" placeholder="記事の内容を貼り付けてください..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>ポストのトーン</label>
+                <select id="postTone">
+                    <option value="casual">📢 カジュアル（親しみやすい）</option>
+                    <option value="formal">💼 フォーマル（丁寧・ビジネス）</option>
+                    <option value="empathy">💭 共感型（悩み・困りごとに寄り添う）</option>
+                    <option value="discovery">💡 発見型（気づき・学び）</option>
+                    <option value="simple">🎯 シンプル（事実をストレートに）</option>
+                </select>
+            </div>
+            <div class="note">
+                <strong>💡 ヒント：</strong> ブックマークレットを使えば、自動で情報を取得できます！
+            </div>
+            <button class="button" onclick="generatePosts()">ポスト候補を生成</button>
+        </div>
+
+        <div id="imageSection" class="card hidden">
+            <h2>画像を選択（任意）</h2>
+            <div class="images-grid" id="imagesGrid"></div>
+        </div>
+
+        <div id="postsArea"></div>
+    </div>
+
+    <script>
+        let blogData = {
+            title: '',
+            url: '',
+            content: '',
+            images: [],
+            selectedImage: null
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const title = params.get('title');
+            const url = params.get('url');
+            const content = params.get('content');
+            const images = params.get('images');
+            
+            if (title) document.getElementById('blogTitle').value = decodeURIComponent(title);
+            if (url) document.getElementById('blogUrl').value = decodeURIComponent(url);
+            if (content) document.getElementById('blogContent').value = decodeURIComponent(content);
+            
+            if (images) {
+                blogData.images = decodeURIComponent(images).split(',').filter(i => i);
+                if (blogData.images.length > 0) displayImages();
+            }
+        });
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function generatePosts() {
+            const title = document.getElementById('blogTitle').value;
+            const url = document.getElementById('blogUrl').value;
+            const content = document.getElementById('blogContent').value;
+            const tone = document.getElementById('postTone').value;
+
+            if (!content) {
+                alert('記事本文を入力してください');
+                return;
+            }
+
+            blogData.title = title;
+            blogData.url = url;
+            blogData.content = content;
+
+            const catchyParts = extractCatchyParts(content);
+            const posts = createPostCandidates(title, url, catchyParts, tone);
+            displayPosts(posts);
+        }
+
+        function extractCatchyParts(content) {
+            const allParts = [];
+            const sentences = content.split(/[。！？\n]/);
+            const ngWords = ['図', '表', '参照', '以下', '上記', 'Fig', 'Table', '※', '＊'];
+            const validEndings = ['です', 'ます', 'でした', 'ました', 'だ', 'である', 'た', 'る', 'い', 'ない', 'よね', 'ね', 'よ', 'か'];
+            
+            const isValid = (s) => {
+                const t = s.trim();
+                if (t.length < 30 || t.length > 150) return false;
+                if (ngWords.some(ng => t.includes(ng))) return false;
+                if (!validEndings.some(end => t.endsWith(end))) return false;
+                if (/[0-9\.,、。！？]$/.test(t)) return false;
+                return true;
+            };
+            
+            allParts.push(...sentences.filter(s => /\d+/.test(s) && isValid(s)));
+            allParts.push(...sentences.filter(s => (s.includes('?') || s.includes('？')) && isValid(s)));
+            allParts.push(...sentences.filter(s => (s.includes('大切') || s.includes('重要') || s.includes('ポイント') || s.includes('コツ') || s.includes('秘訣') || s.includes('おすすめ')) && isValid(s)));
+            allParts.push(...sentences.filter(s => (s.includes('できる') || s.includes('なる') || s.includes('になる') || s.includes('効果') || s.includes('メリット') || s.includes('変わる')) && isValid(s)));
+            allParts.push(...sentences.filter(s => (s.includes('実は') || s.includes('意外と') || s.includes('実際') || s.includes('驚') || s.includes('発見') || s.includes('気づ')) && isValid(s)));
+            allParts.push(...sentences.filter(s => (s.includes('すべき') || s.includes('しよう') || s.includes('してみ') || s.includes('おすすめ') || s.includes('試し')) && isValid(s)));
+            allParts.push(...sentences.filter(s => isValid(s) && !allParts.includes(s)).slice(0, 20));
+            
+            const unique = [...new Set(allParts)].filter(p => p && p.trim().length > 0);
+            return shuffleArray(unique).slice(0, 10);
+        }
+
+        function createPostCandidates(title, url, catchyParts, tone) {
+            if (catchyParts.length === 0) {
+                return ['記事からキャッチーな部分を抽出できませんでした。\n\nもう少し長い文章を入力してください。'];
+            }
+
+            const allPosts = [];
+            const urlLine = (url && url.trim()) ? `\n\n${url}` : '';
+            let idx = 0;
+            const next = () => catchyParts[idx++ % catchyParts.length];
+
+            switch(tone) {
+                case 'casual':
+                    allPosts.push(`${next()}\n\nこれ、めっちゃ大事だと思う💡${urlLine}`);
+                    allPosts.push(`${next()}\n\nこれ良いよね${urlLine}`);
+                    allPosts.push(`${next()}\n\nマジでこれ${urlLine}`);
+                    allPosts.push(`${next()}\n\n知らなかった〜${urlLine}`);
+                    allPosts.push(`${next()}\n\nなるほどって思った${urlLine}`);
+                    allPosts.push(`${next()}\n\n参考になる！${urlLine}`);
+                    allPosts.push(`${next()}\n\n試してみたいな${urlLine}`);
+                    allPosts.push(`${next()}\n\nこれ使えそう${urlLine}`);
+                    allPosts.push(`${next()}\n\n気づかなかった💡${urlLine}`);
+                    allPosts.push(`${next()}\n\nいいこと聞いた${urlLine}`);
+                    allPosts.push(`最近気づいたこと\n\n${next()}${urlLine}`);
+                    allPosts.push(`今日の発見💡\n\n${next()}${urlLine}`);
+                    allPosts.push(`メモ📝\n\n${next()}${urlLine}`);
+                    allPosts.push(`${next()}\n\nこれ覚えとこ${urlLine}`);
+                    allPosts.push(`${next()}\n\nシェアしとく${urlLine}`);
+                    allPosts.push(`${next()}\n\n意外と知られてない${urlLine}`);
+                    allPosts.push(`${next()}\n\nこれ便利${urlLine}`);
+                    allPosts.push(`${next()}\n\n早速やってみる${urlLine}`);
+                    allPosts.push(`${next()}\n\nあるあるだよね${urlLine}`);
+                    allPosts.push(`${next()}\n\nこういうの待ってた${urlLine}`);
+                    if (title) allPosts.push(`${title}について考えてた\n\n${next()}${urlLine}`);
+                    if (title) allPosts.push(`${title}、意外と奥深い\n\n${next()}${urlLine}`);
+                    allPosts.push(`最近学んだこと💡\n\n${next()}${urlLine}`);
+                    allPosts.push(`忘れないうちにメモ\n\n${next()}${urlLine}`);
+                    allPosts.push(`これ知ってる？\n\n${next()}${urlLine}`);
+                    if (catchyParts.length >= 2) {
+                        const c1 = next(); const c2 = next();
+                        allPosts.push(`${c1}\n\n特に${c2}ってのが良い${urlLine}`);
+                        allPosts.push(`気づいたこと2つ\n\n・${c1}\n・${c2}${urlLine}`);
+                    }
+                    break;
+                    
+                case 'formal':
+                    allPosts.push(`${next()}\n\nご参考になれば幸いです。${urlLine}`);
+                    allPosts.push(`${next()}\n\nお役に立てれば嬉しいです。${urlLine}`);
+                    allPosts.push(`${next()}\n\n参考情報です。${urlLine}`);
+                    allPosts.push(`${next()}\n\nご一読いただけますと幸いです。${urlLine}`);
+                    allPosts.push(`${next()}\n\n知見を共有いたします。${urlLine}`);
+                    allPosts.push(`${next()}\n\n情報提供です。${urlLine}`);
+                    allPosts.push(`${next()}\n\nご確認ください。${urlLine}`);
+                    allPosts.push(`${next()}\n\n参考までに。${urlLine}`);
+                    allPosts.push(`${next()}\n\n整理しました。${urlLine}`);
+                    allPosts.push(`${next()}\n\nまとめました。${urlLine}`);
+                    if (title) allPosts.push(`【${title}】\n\n${next()}${urlLine}`);
+                    if (title) allPosts.push(`${title}について\n\n${next()}${urlLine}`);
+                    if (title) allPosts.push(`${title}に関する考察\n\n${next()}${urlLine}`);
+                    allPosts.push(`${next()}\n\n以上、ご参考まで。${urlLine}`);
+                    allPosts.push(`${next()}\n\n所感を述べました。${urlLine}`);
+                    allPosts.push(`重要なポイント\n\n${next()}${urlLine}`);
+                    allPosts.push(`本日の気づき\n\n${next()}${urlLine}`);
+                    allPosts.push(`備忘録\n\n${next()}${urlLine}`);
+                    allPosts.push(`知見の共有\n\n${next()}${urlLine}`);
+                    allPosts.push(`学びの記録\n\n${next()}${urlLine}`);
+                    if (catchyParts.length >= 2) {
+                        const c1 = next(); const c2 = next();
+                        allPosts.push(`ポイント\n\n・${c1}\n・${c2}${urlLine}`);
+                        allPosts.push(`要点をまとめました\n\n・${c1}\n・${c2}${urlLine}`);
+                    }
+                    break;
+                    
+                case 'empathy':
+                    allPosts.push(`${next()}\n\n同じように感じてる人いるかな？${urlLine}`);
+                    allPosts.push(`${next()}\n\nわかる人いますか？${urlLine}`);
+                    allPosts.push(`${next()}\n\n私だけじゃないよね？${urlLine}`);
+                    allPosts.push(`${next()}\n\nこれ、あるあるだと思う${urlLine}`);
+                    allPosts.push(`${next()}\n\n共感してくれる人いたら嬉しい${urlLine}`);
+                    allPosts.push(`${next()}\n\nみんなはどう思う？${urlLine}`);
+                    allPosts.push(`${next()}\n\n同じ経験ある人いそう${urlLine}`);
+                    allPosts.push(`${next()}\n\n私もそうだったな${urlLine}`);
+                    allPosts.push(`${next()}\n\n誰かの参考になれば${urlLine}`);
+                    allPosts.push(`${next()}\n\n少しでも役に立てば嬉しいです${urlLine}`);
+                    if (title) allPosts.push(`${title}って、意外と難しいですよね\n\n${next()}${urlLine}`);
+                    if (title) allPosts.push(`${title}について、私なりに考えてみました\n\n${next()}${urlLine}`);
+                    if (title) allPosts.push(`${title}で悩んでる人へ\n\n${next()}${urlLine}`);
+                    allPosts.push(`${next()}\n\n一緒にがんばりましょう${urlLine}`);
+                    allPosts.push(`${next()}\n\nこれ、私も知りたかった${urlLine}`);
+                    allPosts.push(`${next()}\n\n同じ気持ちの人いるはず${urlLine}`);
+                    allPosts.push(`${next()}\n\nみんなも悩んでるよね？${urlLine}`);
+                    allPosts.push(`${next()}\n\n私の経験が役立てば${urlLine}`);
+                    allPosts.push(`${next()}\n\n少しでもヒントになれば${urlLine}`);
+                    allPosts.push(`${next()}\n\n気持ちわかります${urlLine}`);
+                    if (catchyParts.length >= 2) {
+                        const c1 = next(); const c2 = next();
+                        allPosts.push(`${c1}\n\nあと、${c2}も重要だと思う${urlLine}`);
+                    }
+                    break;
+                    
+                case 'discovery':
+                    allPosts.push(`今日の気づき💡\n\n${next()}${urlLine}`);
+                    allPosts.push(`発見：${next()}${urlLine}`);
+                    allPosts.push(`${next()}\n\n意外と知らなかった${urlLine}`);
+                    allPosts.push(`${next()}\n\nこれは知っておきたい${urlLine}`);
+                    allPosts.push(`${next()}\n\n勉強になった${urlLine}`);
+                    allPosts.push(`${next()}\n\nへぇ〜って思った${urlLine}`);
+                    allPosts.push(`${next()}\n\n新しい発見${urlLine}`);
+                    allPosts.push(`${next()}\n\n目から鱗${urlLine}`);
+                    allPosts.push(`${next()}\n\nなるほど！${urlLine}`);
+                    allPosts.push(`${next()}\n\nそういうことか${urlLine}`);
+                    allPosts.push(`${next()}\n\n初めて知った${urlLine}`);
+                    allPosts.push(`${next()}\n\n面白い発見${urlLine}`);
+                    allPosts.push(`${next()}\n\nこれ興味深い${urlLine}`);
+                    allPosts.push(`${next()}\n\n深掘りしてみた${urlLine}`);
+                    if (title) allPosts.push(`${title}について調べてわかったこと\n\n${next()}${urlLine}`);
+                    if (title) allPosts.push(`${title}を深掘りしてみた結果\n\n${next()}${urlLine}`);
+                    allPosts.push(`${next()}\n\n調べてよかった${urlLine}`);
+                    allPosts.push(`${next()}\n\n知識が増えた${urlLine}`);
+                    allPosts.push(`${next()}\n\n学びになった${urlLine}`);
+                    allPosts.push(`${next()}\n\n理解が深まった${urlLine}`);
+                    if (catchyParts.length >= 2) {
+                        const c1 = next(); const c2 = next();
+                        allPosts.push(`発見したこと\n\n✓ ${c1}\n✓ ${c2}${urlLine}`);
+                        allPosts.push(`学んだこと\n\n${c1}\n\nあと、${c2}${urlLine}`);
+                    }
+                    break;
+                    
+                case 'simple':
+                    allPosts.push(`${next()}${urlLine}`);
+                    if (title) allPosts.push(`${title}\n\n${next()}${urlLine}`);
+                    allPosts.push(`${next()}。${urlLine}`);
+                    allPosts.push(`${next()}です。${urlLine}`);
+                    allPosts.push(`${next()}と思います。${urlLine}`);
+                    allPosts.push(`${next()}ですね。${urlLine}`);
+                    allPosts.push(`📝 ${next()}${urlLine}`);
+                    allPosts.push(`💡 ${next()}${urlLine}`);
+                    allPosts.push(`✓ ${next()}${urlLine}`);
+                    allPosts.push(`メモ：${next()}${urlLine}`);
+                    allPosts.push(`備忘録：${next()}${urlLine}`);
+                    allPosts.push(`要点：${next()}${urlLine}`);
+                    allPosts.push(`ポイント：${next()}${urlLine}`);
+                    allPosts.push(`まとめ：${next()}${urlLine}`);
+                    allPosts.push(`重要：${next()}${urlLine}`);
+                    if (catchyParts.length >= 2) {
+                        const c1 = next(); const c2 = next();
+                        allPosts.push(`・${c1}\n・${c2}${urlLine}`);
+                        allPosts.push(`1. ${c1}\n2. ${c2}${urlLine}`);
+                    }
+                    if (catchyParts.length >= 3) {
+                        const c1 = next(); const c2 = next(); const c3 = next();
+                        allPosts.push(`・${c1}\n・${c2}\n・${c3}${urlLine}`);
+                    }
+                    break;
+            }
+            
+            return shuffleArray(allPosts.filter(p => p && p.trim().length > 0)).slice(0, 5);
+        }
+
+        function displayPosts(posts) {
+            const area = document.getElementById('postsArea');
+            area.innerHTML = `
+                <div class="card">
+                    <h2>ポスト候補</h2>
+                    ${posts.map((post, i) => {
+                        const count = post.length;
+                        const over = count > 280;
+                        return `
+                            <div class="post-card">
+                                <div class="post-meta">
+                                    <span>パターン ${i + 1}</span>
+                                    <span class="char-count ${over ? 'over' : ''}">${count} / 280文字</span>
+                                </div>
+                                <div class="post-text">${post}</div>
+                                ${blogData.selectedImage ? `<div class="image-preview"><img src="${blogData.selectedImage}"></div>` : ''}
+                                <button class="copy-button" onclick="copyPost(\`${post.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">コピー</button>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function displayImages() {
+            const section = document.getElementById('imageSection');
+            const grid = document.getElementById('imagesGrid');
+            
+            if (blogData.images.length === 0) {
+                section.classList.add('hidden');
+                return;
+            }
+            
+            section.classList.remove('hidden');
+            grid.innerHTML = blogData.images.map((img, i) => `
+                <div class="image-item" onclick="selectImage('${img}', ${i})">
+                    <img src="${img}">
+                </div>
+            `).join('');
+        }
+
+        function selectImage(url, index) {
+            blogData.selectedImage = url;
+            document.querySelectorAll('.image-item').forEach((item, i) => {
+                item.classList.toggle('selected', i === index);
+            });
+        }
+
+        function copyPost(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('コピーしました！');
+            }).catch(() => {
+                alert('コピーに失敗しました');
+            });
+        }
+    </script>
+</body>
+</html>
