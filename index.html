@@ -221,6 +221,25 @@
         .image-item.selected {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.2);
+            position: relative;
+        }
+
+        .image-item.selected::before {
+            content: attr(data-order);
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--primary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            z-index: 1;
         }
 
         .image-item img {
@@ -282,7 +301,8 @@
         </div>
 
         <div id="imageSection" class="card hidden">
-            <h2>画像を選択（任意）</h2>
+            <h2>画像を選択（最大4枚）</h2>
+            <p style="color: var(--text-light); margin-bottom: 1rem; font-size: 0.9rem;">クリックして選択/解除できます。選んだ順番に番号が表示されます。</p>
             <div class="images-grid" id="imagesGrid"></div>
         </div>
 
@@ -295,7 +315,7 @@
             url: '',
             content: '',
             images: [],
-            selectedImage: null
+            selectedImages: []  // 複数選択用（最大4枚）
         };
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -531,6 +551,19 @@
 
         function displayPosts(posts) {
             const area = document.getElementById('postsArea');
+            
+            // 選択された画像のプレビューHTML
+            let imagesPreviewHtml = '';
+            if (blogData.selectedImages.length > 0) {
+                imagesPreviewHtml = `
+                    <div class="image-preview" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem;">
+                        ${blogData.selectedImages.map(img => `
+                            <img src="${img}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px;">
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
             area.innerHTML = `
                 <div class="card">
                     <h2>ポスト候補</h2>
@@ -544,7 +577,7 @@
                                     <span class="char-count ${over ? 'over' : ''}">${count} / 280文字</span>
                                 </div>
                                 <div class="post-text">${post}</div>
-                                ${blogData.selectedImage ? `<div class="image-preview"><img src="${blogData.selectedImage}"></div>` : ''}
+                                ${imagesPreviewHtml}
                                 <button class="copy-button" onclick="copyPost(\`${post.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">コピー</button>
                             </div>
                         `;
@@ -571,9 +604,33 @@
         }
 
         function selectImage(url, index) {
-            blogData.selectedImage = url;
+            const imgIndex = blogData.selectedImages.indexOf(url);
+            
+            if (imgIndex > -1) {
+                // すでに選択されている → 解除
+                blogData.selectedImages.splice(imgIndex, 1);
+            } else {
+                // 未選択 → 追加（最大4枚まで）
+                if (blogData.selectedImages.length < 4) {
+                    blogData.selectedImages.push(url);
+                } else {
+                    alert('画像は最大4枚まで選択できます');
+                    return;
+                }
+            }
+            
+            // 選択状態を更新
             document.querySelectorAll('.image-item').forEach((item, i) => {
-                item.classList.toggle('selected', i === index);
+                const imgUrl = blogData.images[i];
+                if (blogData.selectedImages.includes(imgUrl)) {
+                    item.classList.add('selected');
+                    // 選択順を表示
+                    const order = blogData.selectedImages.indexOf(imgUrl) + 1;
+                    item.setAttribute('data-order', order);
+                } else {
+                    item.classList.remove('selected');
+                    item.removeAttribute('data-order');
+                }
             });
         }
 
