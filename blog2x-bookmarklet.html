@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog2X - ブックマークレット設定ガイド</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #F7FBFF;
+            color: #0F1419;
+            line-height: 1.7;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #1D9BF0;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: #0F1419;
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #D4E9F7;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(29, 155, 240, 0.15);
+            margin-bottom: 2rem;
+        }
+
+        .bookmarklet-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: #1D9BF0;
+            color: white;
+            text-decoration: none;
+            border-radius: 24px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            cursor: move;
+            user-select: none;
+        }
+
+        .bookmarklet-button:hover {
+            background: #1A8CD8;
+            transform: translateY(-2px);
+        }
+
+        .step {
+            margin: 1.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .step::before {
+            content: "●";
+            position: absolute;
+            left: 0;
+            color: #1D9BF0;
+            font-size: 1.5rem;
+        }
+
+        .note {
+            background: #EFF9FF;
+            border-left: 4px solid #1D9BF0;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .success {
+            background: #E8F5E9;
+            border-left: 4px solid #4CAF50;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        ul {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+
+        li {
+            margin: 0.5rem 0;
+        }
+
+        code {
+            background: #F0F0F0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Blog2X - ブックマークレット設定ガイド</h1>
+
+        <div class="card">
+            <h2>1. ブックマークレットとは？</h2>
+            <p>
+                ブログ記事を開いた状態でクリックするだけで、記事の情報を自動取得してBlog2Xツールに渡すことができます。
+            </p>
+
+            <div class="note">
+                <strong>💡 こんな時に便利：</strong>
+                <ul>
+                    <li>自分のブログ記事をXでシェアしたい</li>
+                    <li>他人のブログ記事を引用・紹介したい</li>
+                    <li>キャッチーなポスト文を素早く作りたい</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>2. 設定方法</h2>
+
+            <div class="step">
+                <strong>ステップ1: ブックマークバーを表示</strong>
+                <ul>
+                    <li><strong>Chrome/Edge:</strong> メニュー → ブックマーク → ブックマークバーを表示</li>
+                    <li><strong>Safari:</strong> 表示 → ブックマークバーを表示</li>
+                    <li><strong>Firefox:</strong> 表示 → ツールバー → ブックマークツールバー</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <strong>ステップ2: ブックマークレットをドラッグ＆ドロップ</strong>
+                <p style="margin: 1rem 0;">
+                    下のボタンを<strong>ブックマークバーにドラッグ</strong>してください（クリックしないで！）：
+                </p>
+                <p style="text-align: center; margin: 2rem 0;">
+                    <a href="javascript:(function(){const%20title=document.title;const%20url=window.location.href;let%20content='';const%20article=document.querySelector('article')||document.querySelector('[role=%22main%22]')||document.querySelector('.entry-content')||document.querySelector('.post-content')||document.body;const%20headings=Array.from(article.querySelectorAll('h2,h3')).map(h=>h.textContent.trim()).filter(t=>t.length>0);const%20bold=Array.from(article.querySelectorAll('strong,b')).map(b=>b.textContent.trim()).filter(t=>t.length>10&&t.length<200);const%20paragraphs=Array.from(article.querySelectorAll('p')).map(p=>p.textContent.trim()).filter(t=>t.length>20);content=[...headings,...bold,...paragraphs.slice(0,5)].join('\n\n');const%20images=Array.from(document.querySelectorAll('img')).map(img=>img.src).filter(src=>src&&!src.includes('icon')&&!src.includes('logo')&&!src.includes('avatar')).slice(0,10);const%20toolUrl='https://wakabaspace.github.io/blog2x/?title='+encodeURIComponent(title)+'&url='+encodeURIComponent(url)+'&content='+encodeURIComponent(content)+'&images='+encodeURIComponent(images.join(','));window.open(toolUrl,'_blank');})();" class="bookmarklet-button" onclick="return false;">📝 Blog2X</a>
+                </p>
+                <div class="success">
+                    <strong>✅ 完了！</strong> ブックマークバーに追加されたら、すぐに使えます。
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>3. 使い方</h2>
+
+            <div class="step">
+                <strong>ステップ1: ブログ記事を開く</strong>
+                <p>自分のブログでも、他人のブログでも、Xでシェアしたい記事を開きます。</p>
+            </div>
+
+            <div class="step">
+                <strong>ステップ2: ブックマークレットをクリック</strong>
+                <p>ブックマークバーの「📝 Blog2X」をクリック。</p>
+            </div>
+
+            <div class="step">
+                <strong>ステップ3: 自動で情報が取得される</strong>
+                <p>
+                    新しいタブでBlog2Xツールが開き、以下が自動入力されます：<br>
+                    ✓ 記事タイトル<br>
+                    ✓ 記事URL<br>
+                    ✓ 記事の見出し・太字・本文<br>
+                    ✓ 記事内の画像
+                </p>
+            </div>
+
+            <div class="step">
+                <strong>ステップ4: ポスト候補を生成</strong>
+                <p>「ポスト候補を生成」ボタンをクリックすると、複数パターンのポスト文が自動生成されます。</p>
+            </div>
+
+            <div class="step">
+                <strong>ステップ5: コピーしてXに投稿</strong>
+                <p>気に入ったポスト候補の「コピー」ボタンをクリックして、Xに貼り付けて投稿！</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>4. トラブルシューティング</h2>
+
+            <h3 style="margin-top: 1.5rem; font-size: 1.1rem;">❌ ブックマークレットが動作しない</h3>
+            <ul>
+                <li><strong>ポップアップブロック</strong>：ブラウザの設定で、新しいタブを開くことを許可してください</li>
+                <li><strong>ドラッグ＆ドロップ失敗</strong>：ボタンをクリックせず、長押ししてドラッグしてください</li>
+            </ul>
+
+            <h3 style="margin-top: 1.5rem; font-size: 1.1rem;">❌ 情報が取得できない</h3>
+            <ul>
+                <li><strong>一部のブログ構造</strong>：特殊な構造のブログでは、自動取得がうまくいかないことがあります</li>
+                <li><strong>手動入力</strong>：その場合は、ツールを直接開いて手動で情報を入力してください</li>
+            </ul>
+
+            <h3 style="margin-top: 1.5rem; font-size: 1.1rem;">💡 より便利な使い方</h3>
+            <ul>
+                <li><strong>自分のブログ</strong>：記事を公開したら、すぐにブックマークレットでポスト作成</li>
+                <li><strong>他人のブログ</strong>：引用・紹介する際に、URL付きでキャッチーにシェア</li>
+                <li><strong>画像選択</strong>：複数の画像がある場合、一番目立つものを選んでポスト</li>
+            </ul>
+        </div>
+
+        <div class="success">
+            <strong>🎉 設定完了！</strong>
+            <p style="margin-top: 0.5rem;">
+                これでブログ記事のXシェアがぐっと楽になります。<br>
+                ツールURL: <a href="https://wakabaspace.github.io/blog2x/" style="color: #1D9BF0; text-decoration: none;">https://wakabaspace.github.io/blog2x/</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
