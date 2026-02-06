@@ -371,12 +371,14 @@
             const allParts = [];
             const sentences = content.split(/[。！？\n]/);
             const ngWords = ['図', '表', '参照', '以下', '上記', 'Fig', 'Table', '※', '＊'];
+            const ngPhrases = ['次回のコメント', 'メールアドレス', 'コメントを保存', 'ブラウザーに保存', 'サイトを保存', '必須項目', '入力してください', 'Cookie'];
             const validEndings = ['です', 'ます', 'でした', 'ました', 'だ', 'である', 'た', 'る', 'い', 'ない', 'よね', 'ね', 'よ', 'か'];
             
             const isValid = (s) => {
                 const t = s.trim();
                 if (t.length < 30 || t.length > 150) return false;
                 if (ngWords.some(ng => t.includes(ng))) return false;
+                if (ngPhrases.some(ng => t.includes(ng))) return false;
                 if (!validEndings.some(end => t.endsWith(end))) return false;
                 if (/[0-9\.,、。！？]$/.test(t)) return false;
                 return true;
